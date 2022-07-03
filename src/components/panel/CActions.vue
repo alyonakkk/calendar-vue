@@ -1,108 +1,67 @@
 <template>
   <div class="panel__actions">
     <div class="panel__wrapper">
-      <DefaultButton :title="'Добавить'" @click="handleQuickAddEvent" />
-      <DefaultPopup :is-open="isActiveQuickPopup" @close="closeQuickAddPopup">
-        <form class="quick-add__form">
-          <DefaultInput
-            :value="quickAddFieldValue"
-            :placeholder="'25 ноября, Кутеж, Серж'"
-            @input="onChangeQuickAddField"
-          />
-          <WhiteButton :title="'Создать'" @click="handleCreateEvent" />
-        </form>
+      <DefaultButton title="Добавить" @click="handleQuickAddEvent" />
+      <DefaultPopup
+        :is-open="getIsActiveQuickPopup"
+        @close="toggleQuickAddEventPopup(false)"
+      >
+        <QuicklyAddEventForm
+          @moveToMonth="moveToOtherMonth"
+          @closeQuickAddPopup="toggleQuickAddEventPopup(false)"
+          @openWindowPopup="toggleWindowPopup(true)"
+        />
       </DefaultPopup>
     </div>
-    <DefaultButton :title="'Обновить'" @click="handleReload" />
-    <WindowPopup :is-open="isActiveWindowPopup" @close="closeWindowPopup">
+    <DefaultButton title="Обновить" @click="handleReload" />
+    <WindowPopup
+      :is-open="isActiveWindowPopup"
+      @close="toggleWindowPopup(false)"
+    >
       <p>Плак-плак! В этот день у вас уже запланировано событие! :(</p>
     </WindowPopup>
   </div>
 </template>
 
 <script>
+import { mapGetters, mapMutations } from "vuex";
 import DefaultButton from "@/shared/UI/buttons/DefaultButton";
-import WhiteButton from "@/shared/UI/buttons/WhiteButton";
-import DefaultInput from "@/shared/UI/inputs/DefaultInput";
 import DefaultPopup from "@/shared/UI/popups/defaultPopup/DefaultPopup";
 import WindowPopup from "@/shared/UI/popups/windowPopup/WindowPopup";
+import QuicklyAddEventForm from "@/components/forms/QuicklyAddEventForm";
 
 export default {
   name: "CActions",
   components: {
+    QuicklyAddEventForm,
     WindowPopup,
     DefaultPopup,
-    DefaultInput,
-    WhiteButton,
     DefaultButton,
-  },
-  props: {
-    events: {
-      type: Object,
-      default: null,
-    },
-    currentMonth: {
-      type: Number,
-      default: null,
-    },
-    currentYear: {
-      type: Number,
-      default: null,
-    },
   },
   data() {
     return {
-      isActiveQuickPopup: false,
       isActiveWindowPopup: false,
-      quickAddFieldValue: "",
     };
   },
-  watch: {
-    isActiveQuickPopup() {
-      this.quickAddFieldValue = "";
-    },
+  computed: {
+    ...mapGetters(["getIsActiveQuickPopup"]),
   },
   methods: {
+    ...mapMutations(["setIsActiveQuickPopup"]),
     handleQuickAddEvent() {
-      this.isActiveQuickPopup = true;
-    },
-    onChangeQuickAddField(value) {
-      this.quickAddFieldValue = value;
-    },
-    handleCreateEvent() {
-      const valueSplit = this.quickAddFieldValue.split(",");
-      const eventDate = valueSplit[0];
-      const eventName = valueSplit[1];
-      const eventMember = valueSplit[2];
-      const hasEventDay = Object.values(this.events).find(
-        (event) => event.date === eventDate
-      );
-      if (!hasEventDay) {
-        const newEvent = {
-          event: eventName,
-          date: eventDate,
-          members: eventMember,
-          description: "",
-        };
-        this.saveInLocalStorage(newEvent);
-        this.$emit("click", eventDate);
-      } else {
-        this.isActiveWindowPopup = true;
-      }
-      this.closeQuickAddPopup();
-    },
-    saveInLocalStorage(newEvent) {
-      this.$set(this.events, newEvent.date, newEvent);
-      localStorage.setItem("events", JSON.stringify(this.events));
+      this.toggleQuickAddEventPopup(true);
     },
     handleReload() {
       location.reload();
     },
-    closeQuickAddPopup() {
-      this.isActiveQuickPopup = false;
+    moveToOtherMonth(date) {
+      this.$emit("moveToMonth", date);
     },
-    closeWindowPopup() {
-      this.isActiveWindowPopup = false;
+    toggleQuickAddEventPopup(value) {
+      this.setIsActiveQuickPopup(value);
+    },
+    toggleWindowPopup(value) {
+      this.isActiveWindowPopup = value;
     },
   },
 };
@@ -115,10 +74,5 @@ export default {
 }
 .panel__wrapper {
   position: relative;
-}
-.quick-add__form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 </style>

@@ -8,6 +8,7 @@
 
 <script>
 import CloseButton from "@/shared/UI/buttons/CloseButton";
+
 export default {
   name: "DefaultPopup",
   components: { CloseButton },

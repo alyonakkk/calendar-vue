@@ -1,5 +1,10 @@
 <template>
-  <button @click.prevent="onClickButton" class="white-button">
+  <button
+    :disabled="isDisabled"
+    @click="onClickButton"
+    class="white-button"
+    :type="type"
+  >
     {{ title }}
   </button>
 </template>
@@ -8,9 +13,17 @@
 export default {
   name: "WhiteButton",
   props: {
+    type: {
+      type: String,
+      default: "button",
+    },
     title: {
       type: String,
       default: "",
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false,
     },
   },
   methods: {

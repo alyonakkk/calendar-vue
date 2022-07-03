@@ -1,36 +1,27 @@
 <template>
   <div class="panel">
-    <CActions :events="events" @click="onChangeDate" />
-    <CSearch :events="events" @click="onChangeDate" />
+    <CActions @moveToMonth="moveToOtherMonth" />
+    <CSearch @moveToMonth="moveToOtherMonth" />
   </div>
 </template>
 
 <script>
+import { mapGetters, mapMutations } from "vuex";
 import CSearch from "@/components/panel/CSearch";
 import CActions from "@/components/panel/CActions";
 
 export default {
   name: "CPanel",
   components: { CActions, CSearch },
-  props: {
-    events: {
-      type: Object,
-      default: null,
-    },
-    currentMonth: {
-      type: Number,
-      default: null,
-    },
-    currentYear: {
-      type: Number,
-      default: null,
-    },
+  computed: {
+    ...mapGetters(["getCurrentMonth", "getCurrentYear"]),
   },
   methods: {
-    onChangeDate(date) {
+    ...mapMutations(["setCurrentMonth", "setCurrentYear"]),
+    moveToOtherMonth(date) {
       const dateSplit = date.split(".");
-      this.$emit("changeMonth", +dateSplit[1] - 1);
-      this.$emit("changeYear", +dateSplit[2]);
+      this.setCurrentMonth(+dateSplit[1] - 1);
+      this.setCurrentYear(+dateSplit[2]);
     },
   },
 };
